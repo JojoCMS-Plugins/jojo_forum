@@ -1,0 +1,1 @@
+A discussion forum system which integrates well into the rest of the site, sharing a login with other areas. Is not as fully featured as VBulletin or PHPBB, but is fast, integrates well and is more search engine friendly.
