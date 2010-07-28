@@ -96,7 +96,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
     function uploadImage($postid, $name) {
 
         if (isset($_FILES[$name])) {
-    
+
             $filename = $_FILES[$name]['name']; //for convenience
             //We must not allow PHP files to be uploaded to the server as the visitor could guess the location and execute them.
             $ext = strtolower(Jojo::getfileextension($filename));
@@ -104,7 +104,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 echo "You cannot upload PHP files into this system for security reasons. If you really need to, please Zip them first and upload the Zip file.";
                 exit();
             }
-        
+
             //TODO: Check destination directory exists etc
             $destination = '';
             //Check error codes
@@ -139,10 +139,10 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     }
                     //All appears good, so attempt to move to final resting place
                     $destination = _DOWNLOADDIR.'/forum-images/'.$postid.'/'.basename($filename);
-        
+
                     /* Make the directory */
                     if (!file_exists(dirname($destination))) Jojo::recursiveMkdir(dirname($destination), 0777);
-        
+
                     //Ensure file does not already exist on server, rename if it does
                     $i=1;
                     while (file_exists($destination)){
@@ -261,20 +261,20 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
             sort($files, SORT_STRING);
         return $files;
     }
-    
+
     /* template hook - shows 'recent posts' on the suer profile */
     function profile_bottom() {
         $userid = Jojo::getFormData('id', false);
         if (!$userid) return false;
-        
+
         global $smarty, $_USERGROUPS;
         $maxage   = 90; //don't show posts older than this (days)
         $maxposts = 5; //max number of recent posts to show
-        
+
         /* retrieve recent post activity from the database. This may be more data than we need, but remember we need to delete the posts where the forum is password protected */
         $postdata = Jojo::selectQuery("SELECT * FROM {forumpost} WHERE fp_posterid=? AND fp_datetime>? GROUP BY fp_topicid ORDER BY fp_datetime DESC LIMIT 100", array($userid, strtotime('-'.$maxage.' days')));
         $n = count($postdata);
-        
+
         $posts = array();
         if ($n) {
             $forumperms = new Jojo_Permissions();
@@ -302,19 +302,19 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
         }
         return $smarty->fetch('jojo_forum_profile_bottom.tpl');
     }
-    
+
     function isModerator()
     {
         global $_USERGROUPS;
-        
+
         static $_cache;
         if (isset($_cache)) return $_cache;
         $_cache = false;
-        
+
         /* $moderators is an array of all usergroups that are allowed to moderate forums */
         $moderators_str = Jojo::getOption('forum_moderator_groups', 'admin');
         $moderators = explode(',', str_replace(' ', '', $moderators_str));
-        
+
         foreach ($_USERGROUPS as $group) {
             if (in_array($group, $moderators)) {
                 $_cache = true;
@@ -329,7 +329,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
         global $smarty, $_USERGROUPS, $_USERID, $posters, $_SERVERTIMEZONE, $_USERTIMEZONE;
 
         $content = array();
-        
+
         $smarty->assign('is_moderator', self::isModerator());
         $smarty->assign('prefix', 'forums');
 
@@ -377,20 +377,20 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 Jojo::redirect(_SITEURL . '/topics/' . $id . '/index/', 302);
 
             } elseif ($action == 'newtopic') {
-                
+
                 /* POST NEW TOPIC */
                 $errors = array();
-                
+
                 if (empty($subject)) {
                     echo 'Please enter a subject';
                     exit();
                 }
-                
+
                 $captchacode = Jojo::getFormData('captchacode', '');
                 if (empty($_USERID) && !PhpCaptcha::Validate($captchacode)) {
                     $errors[] = 'Invalid code entered';
                 }
-                
+
                 /* Forum Security - must have 'view' permission to post */
                 $forumperms = new Jojo_Permissions();
                 $forumPermissions = $forumperms->getPermissions('forum', $forumid);
@@ -398,49 +398,49 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     echo 'Access Denied';
                     exit();
                 }
-                
+
                 /* ensure guests aren't posting unless options allows this */
                 if (!$userid && Jojo::getOption('forum_allow_guest_posts', 'no') == 'no') {
                     echo 'Guest posts are not allowed on this forum.';
                     exit();
                 }
-                
+
                 /* only moderators can make a post sticky */
                 $sticky = Jojo::getFormData('sticky', false);
                 $sticky = ($sticky && self::isModerator()) ? 'yes' : 'no';
-                
+
                 if (count($errors)) {
                     $smarty->assign('errors', $errors);
                     $forumaction = 'new';
                 } else {
                     $topicid = Jojo::insertQuery("INSERT INTO {forumtopic} SET ft_title=?, ft_posterid=?, ft_postername=?, ft_datetime=?, ft_forumid=?, ft_sticky=?, ft_locked='no'", array($subject, $userid, $username, time(), $forumid, $sticky));
                     $htmlbody = Jojo::bb2Html($body);
-    
+
                     $forumpostid = Jojo::insertQuery("INSERT INTO {forumpost} SET fp_topicid=?, fp_posterid=?, fp_postername=?, fp_datetime=?, fp_bbbody=?, fp_body=?, fp_ip=?", array($topicid, $userid, $username, time(), $body, $htmlbody, Jojo::getIp()));
                     if (isset($_FILES['file1'])) {self::uploadImage($forumpostid, 'file1');}
                     if (isset($_FILES['file2'])) {self::uploadImage($forumpostid, 'file2');}
                     if (isset($_FILES['file3'])) {self::uploadImage($forumpostid, 'file3');}
                     if (isset($_FILES['file4'])) {self::uploadImage($forumpostid, 'file4');}
-    
+
                     if (isset($_FILES['file-upload-1'])) {self::uploadFile($forumpostid, 'file-upload-1');}
                     if (isset($_FILES['file-upload-2'])) {self::uploadFile($forumpostid, 'file-upload-2');}
                     if (isset($_FILES['file-upload-3'])) {self::uploadFile($forumpostid, 'file-upload-3');}
                     if (isset($_FILES['file-upload-4'])) {self::uploadFile($forumpostid, 'file-upload-4');}
-    
+
                     /* Update last post variable in forum */
                     Jojo::updateQuery("UPDATE {forum} SET fm_lastpostid=? WHERE forumid=? LIMIT 1", array($forumpostid, $forumid));
                     Jojo::updateQuery("UPDATE {forumtopic} SET ft_lastpostid=?, ft_numposts=1, ft_lastposterid=?, ft_lastpostdate=? WHERE forumtopicid=? LIMIT 1", array($forumpostid, $userid, time(), $topicid));
-    
+
                     Jojo::redirect(_SITEURL.'/topics/'.$topicid.'/index/', 302);
                 }
             }
 
             /* POST REPLY */
-            
+
             if ($action == 'postreply') {
 
                 $errors = array();
-                
+
                 /* get forum id */
                 $data = Jojo::selectRow("SELECT ft_forumid FROM {forumtopic} WHERE forumtopicid=?", $topicid);
                 $forumid = !empty($data['ft_forumid']) ? $data['ft_forumid'] : false;
@@ -452,18 +452,18 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     echo 'Access Denied';
                     exit();
                 }
-                
+
                 /* ensure guests aren't posting unless options allows this */
                 if (!$userid && Jojo::getOption('forum_allow_guest_posts', 'no') == 'no') {
                     echo 'Guest posts are not allowed on this forum.';
                     exit();
                 }
-                
+
                 $captchacode = Jojo::getFormData('captchacode', '');
                 if (empty($_USERID) && !PhpCaptcha::Validate($captchacode)) {
                     $errors[] = 'Invalid code entered';
                 }
-                
+
                 $htmlbody = Jojo::bb2Html($body);
 
                 if (count($errors)) {
@@ -475,21 +475,21 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     if (isset($_FILES['file2'])) {self::uploadImage($forumpostid, 'file2');}
                     if (isset($_FILES['file3'])) {self::uploadImage($forumpostid, 'file3');}
                     if (isset($_FILES['file4'])) {self::uploadImage($forumpostid, 'file4');}
-    
+
                     if (isset($_FILES['file-upload-1'])) {self::uploadFile($forumpostid, 'file-upload-1');}
                     if (isset($_FILES['file-upload-2'])) {self::uploadFile($forumpostid, 'file-upload-2');}
                     if (isset($_FILES['file-upload-3'])) {self::uploadFile($forumpostid, 'file-upload-3');}
                     if (isset($_FILES['file-upload-4'])) {self::uploadFile($forumpostid, 'file-upload-4');}
-    
+
                     /* Update last post variable in forum */
                     Jojo::updateQuery("UPDATE {forum} SET `fm_lastpostid`=? WHERE `forumid`=? LIMIT 1", array($forumpostid, $forumid));
                     Jojo::updateQuery("UPDATE {forumtopic} SET `ft_lastpostid`=?, `ft_numposts`=ft_numposts+1, ft_lastposterid=?, ft_lastpostdate=? WHERE forumtopicid=? LIMIT 1", array($forumpostid, $userid, time(), $topicid));
-    
+
                     /* subscribe the user to the topic */
                     $subscribe = Jojo::getFormData('subscribe',false);
                     if ($subscribe) Jojo_Plugin_Jojo_forum::addSubscription($userid, $topicid);
                     Jojo_Plugin_Jojo_forum::markSubscriptionsUpdated($topicid);
-    
+
                     /* Find number of last page */
                     $data = Jojo::selectRow("SELECT COUNT(*) AS numrecords FROM {forumpost} WHERE fp_topicid=? ORDER BY fp_datetime", $topicid);
                     $numrecords = $data['numrecords'];
@@ -497,14 +497,14 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     if (empty($numperpage)) $numperpage = 10;
                     $lastpage = ceil($numrecords / $numperpage);
                     $pagecode = ($lastpage > 1) ? 'p'.$lastpage : ''; //eg p2, p3 etc - p1 is not used for page1, just leave it blank
-      
+
                     Jojo::redirect(_SITEURL . '/topics/' . $topicid . $pagecode . '/index/', 302);
                 }
             }
-            
+
 
             if ($action == 'editpost') {
-            
+
                 /* only moderators or the original poster can edit the post */
                 if (!self::isModerator()) {
                     $post = Jojo::selectRow("SELECT fp_posterid FROM {forumpost} WHERE forumpostid=?", $postid);
@@ -550,7 +550,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     if (self::isModerator()) {
                         $sticky = Jojo::getFormData('sticky', false);
                         $sticky = $sticky ? 'yes' : 'no';
-                        
+
                         Jojo::updateQuery("UPDATE {forumtopic} SET ft_title=?, ft_seotitle=?, ft_sticky=? WHERE forumtopicid=? LIMIT 1", array($topictitle, $seotitle, $sticky, $topicid));
                     } else {
                         Jojo::updateQuery("UPDATE {forumtopic} SET ft_title=?, ft_seotitle=? WHERE forumtopicid=? LIMIT 1", array($topictitle, $seotitle, $topicid));
@@ -560,12 +560,12 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
             }
 
             if ($action == 'deletepost') {
-            
+
                 /* this code seems to be a duplicate of below - is it needed? */
-                
+
                 $post = Jojo::selectRow("SELECT fp_posterid, fp_topicid FROM {forumpost} WHERE forumpostid=?", $postid);
                 $topicid = isset($post['fp_topicid']) ? $post['fp_topicid'] : 0;
-                
+
                 /* only moderators or the original poster can delete a post */
                 if (!$_USERID || (!self::isModerator() && ($post['fp_posterid']) != $_USERID)) {
                     echo 'Access denied: You are only able to delete your own posts.';
@@ -584,7 +584,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     Jojo::deleteQuery("DELETE FROM {forumpost} WHERE `forumpostid`=? LIMIT 1", $postid);
                     Jojo::updateQuery("UPDATE {forumtopic} SET `ft_numposts`=`ft_numposts`-".$numdeleted." WHERE `forumtopicid`=? LIMIT 1", $topicid);
                 }
-                
+
 
                 header('location: ' . _SITEURL . '/topics/' . $topicid . '/index/');
                 exit();
@@ -607,7 +607,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 echo 'Access denied: You must be logged in to be able to edit posts.';
                 exit();
             }
-            
+
             $forumperms = new Jojo_Permissions();
             $forumPermissions = $forumperms->getPermissions('forum',$post['ft_forumid']);
             if (!$forumperms->hasPerm($_USERGROUPS, 'view')) {
@@ -674,14 +674,14 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
         } elseif ($forumaction == 'delete-post') {
             $postid = $id;
             $post = Jojo::selectRow("SELECT * FROM {forumpost} WHERE forumpostid=?", $postid);
-            
+
             if (empty($post['forumpostid'])) {
                 echo "Post does not exist. It may have already been deleted.";
                 exit();
             }
-            
+
             $topicid = isset($post['fp_topicid']) ? $post['fp_topicid'] : 0;
-            
+
             /* only moderators or the original poster can delete a post */
             if (!$_USERID || (!self::isModerator() && ($post['fp_posterid']) != $_USERID)) {
                 echo 'Access denied: You are only able to delete your own posts.';
@@ -692,7 +692,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
             $data = Jojo::selectRow("SELECT forumpostid FROM {forumpost} WHERE fp_topicid=? ORDER BY fp_datetime LIMIT 1", $topicid);
             if ($data['forumpostid'] == $postid) {
                 /* this is the first post */
-                
+
                 $topic = Jojo::selectRow("SELECT * FROM {forumtopic} WHERE forumtopicid=?", $topicid);
                 $forum = Jojo::selectRow("SELECT * FROM {forum} WHERE forumid=?", $topic['ft_forumid']);
 
@@ -701,26 +701,26 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     /* delete post images */
                     $imagedir = _DOWNLOADDIR.'/forum-images/'.$deletepost['forumpostid'].'/';
                     if (file_exists($imagedir)) {
-                        $d = dir($imagedir); 
-                        while($entry = $d->read()) { 
+                        $d = dir($imagedir);
+                        while($entry = $d->read()) {
                          if ($entry!= "." && $entry!= "..") unlink($entry);
-                        } 
-                        $d->close(); 
+                        }
+                        $d->close();
                         rmdir($imagedir);
                     }
-                    
+
                     /* delete post files */
                     $filedir = _DOWNLOADDIR.'/forum-files/'.$deletepost['forumpostid'].'/';
                     if (file_exists($filedir)) {
-                        $d = dir($filedir); 
-                        while($entry = $d->read()) { 
+                        $d = dir($filedir);
+                        while($entry = $d->read()) {
                          if ($entry!= "." && $entry!= "..") unlink($entry);
-                        } 
-                        $d->close(); 
+                        }
+                        $d->close();
                         rmdir($filedir);
                     }
                 }
-                
+
                 Jojo::deleteQuery("DELETE FROM {forumpost} WHERE `fp_topicid`=? LIMIT 1", $topicid);
                 Jojo::deleteQuery("DELETE FROM {forumtopic} WHERE `forumtopicid`=? LIMIT 1", $topicid);
                 if (!empty($forum['fm_url'])) {
@@ -728,40 +728,40 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 } else {
                     header('location: ' . _SITEURL . '/forums/' . $forum['forumid'] . '/index/', 302);
                 }
-                
+
             } else {
                 /* this is not the first post */
                 $numdeleted = 1;
-                
+
                 /* delete post images */
                 $imagedir = _DOWNLOADDIR.'/forum-images/'.$postid.'/';
                 if (file_exists($imagedir)) {
-                    $d = dir($imagedir); 
-                    while($entry = $d->read()) { 
+                    $d = dir($imagedir);
+                    while($entry = $d->read()) {
                      if ($entry!= "." && $entry!= "..") unlink($entry);
-                    } 
-                    $d->close(); 
+                    }
+                    $d->close();
                     rmdir($imagedir);
                 }
-                
+
                 /* delete post files */
                 $filedir = _DOWNLOADDIR.'/forum-files/'.$postid.'/';
                 if (file_exists($filedir)) {
-                    $d = dir($filedir); 
-                    while($entry = $d->read()) { 
+                    $d = dir($filedir);
+                    while($entry = $d->read()) {
                      if ($entry!= "." && $entry!= "..") unlink($entry);
-                    } 
-                    $d->close(); 
+                    }
+                    $d->close();
                     rmdir($filedir);
                 }
-                
+
                 Jojo::deleteQuery("DELETE FROM {forumpost} WHERE `forumpostid`=? LIMIT 1", $postid);
                 Jojo::updateQuery("UPDATE {forumtopic} SET `ft_numposts`=`ft_numposts`-".$numdeleted." WHERE `forumtopicid`=? LIMIT 1", $topicid);
                 header('location: ' . _SITEURL . '/topics/' . $topicid . '/index/', 302);
             }
-            
 
-            
+
+
 
 
         /* MEMBER PROFILE */
@@ -837,7 +837,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 echo 'Access Denied';
                 exit();
             }
-            
+
             /* build intro paragraph */
             $intro_template = Jojo::getOption('forum_topic_intro_text', '<strong>[topic]</strong>, a forum discussion on [site]. Join us for more discussions on <em>[topic]</em> on our [forum] forum.');
             $intro = str_replace(array('[topic]', '[forum]', '[site]'), array(ucfirst($topic['ft_title']), ucfirst($forum['fm_name']), _SITETITLE), $intro_template);
@@ -996,7 +996,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 echo 'Access Denied';
                 exit();
             }
-            
+
             /* build intro paragraph */
             $intro_template = Jojo::getOption('forum_intro_text', '<strong>[forum]</strong>, a forum topic on [site]. Join in the <em>[forum]</em> discussions on our community forum.');
             $intro = str_replace(array('[forum]', '[site]'), array(ucfirst($forum['fm_name']), _SITETITLE), $intro_template);
@@ -1188,6 +1188,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                     $numview++;
                 }
             }
+
             $smarty->assign('forums',  $forums);
             $smarty->assign('action', 'index');
             $smarty->assign('numshow', $numshow);
@@ -1290,8 +1291,8 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                                     forumpostid, fp_topicid, fp_body, ft.ft_forumid, ft.ft_title,
                                     MATCH(fp_body) AGAINST (?)  AS relevance
                                    FROM
-                                    {forumpost} fp 
-                                   LEFT JOIN {forumtopic} ft ON (fp_topicid=forumtopicid) 
+                                    {forumpost} fp
+                                   LEFT JOIN {forumtopic} ft ON (fp_topicid=forumtopicid)
                                    WHERE
                                     MATCH(fp_body) AGAINST (?) > 0
                                    ORDER BY
@@ -1376,9 +1377,9 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
         $forumurl    = Jojo::getFormData('forumurl', '');
         $pagenumber  = Jojo::getFormData('pagenumber', 1);
 
-        if ($forumaction == 'reply') {      
+        if ($forumaction == 'reply') {
             return _PROTOCOL.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-        } elseif ($forumaction == 'new') {      
+        } elseif ($forumaction == 'new') {
             return _PROTOCOL.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         } elseif ($forumaction == 'edit-post') {
             return _SITEURL . '/' . Jojo::rewrite('edit-post', $id, 'index', '');
