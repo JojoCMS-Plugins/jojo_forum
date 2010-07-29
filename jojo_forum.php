@@ -1394,7 +1394,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
         } elseif ($forumaction == 'profiles') {
             $profile = Jojo::selectRow("SELECT * FROM {user} WHERE userid = ?", $id);
             if ($profile) {
-                return _SITEURL . '/' . Jojo::rewrite('profiles', $profile['userid'], $profile['us_login'], '');
+                return _SITEURL . '/' . Jojo::rewrite('user-profile', $profile['userid'], $profile['us_login'], '');
             }
         } elseif (($forumaction == 'topics')) {
             $topic = Jojo::selectRow("SELECT * FROM {forumtopic} WHERE forumtopicid = ?", $id);
