@@ -21,59 +21,59 @@
 </table>
 
 <div class="posts">
-{section name=p loop=$posts}
-  <!-- [Post by {$posts[p].author|escape:"htmlall"}] -->
+{foreach from=$posts item=post}
+  <!-- [Post by {$post.author|escape:"htmlall"}] -->
   <div class="post {cycle values="row1,row2"}">
-  <a name="{$posts[p].forumpostid}"></a>
+  <a name="{$post.forumpostid}"></a>
     <div class="info">
-      <strong>{if $posts[p].authorurl}<a href="{$posts[p].authorurl}">{/if}{$posts[p].author|escape:"htmlall"}{if !$posts[p].authorid && ($posts[p].author != 'Guest')} (guest){/if}{if $posts[p].authorurl}</a>{/if}</strong>
-      {if $posts[p].authortagline}<p class="tagline">{$posts[p].authortagline|escape:"htmlall"}</p>{/if}
-      {if $posts[p].authoravatar}<img src="{if $posts[p].animated}downloads/users/{$posts[p].authoravatar}{else}images/w75/users/{$posts[p].authoravatar}{/if}" alt="{$posts[p].author|escape:"htmlall"}" title="{$posts[p].author|escape:"htmlall"}" />{/if}
-      <p><span title="{$posts[p].fp_datetime|date_format:"%A, %e %B %Y %I:%M%p"}">{$posts[p].postdate}</span><br />
-      Posts: {$posts[p].authornumposts}</p>
+      <strong>{if $post.authorurl}<a href="{$post.authorurl}">{/if}{$post.author|escape:"htmlall"}{if !$post.authorid && ($post.author != 'Guest')} (guest){/if}{if $post.authorurl}</a>{/if}</strong>
+      {if $post.authortagline}<p class="tagline">{$post.authortagline|escape:"htmlall"}</p>{/if}
+      {if $post.authoravatar}<img src="{if $post.animated}downloads/users/{$post.authoravatar}{else}images/w75/users/{$post.authoravatar}{/if}" alt="{$post.author|escape:"htmlall"}" title="{$post.author|escape:"htmlall"}" />{/if}
+      <p><span title="{$post.fp_datetime|date_format:"%A, %e %B %Y %I:%M%p"}">{$post.postdate}</span><br />
+      Posts: {$post.authornumposts}</p>
     </div>
 
     <div class="body">
-      <div id="body_{$posts[p].forumpostid}">
-      {$posts[p].body}
+      <div id="body_{$post.forumpostid}">
+      {$post.body}
       </div>
-      {if $posts[p].images}
+      {if $post.images}
       <div class="forum-images">
-      {$posts[p].imagelayout}
-      {section name=i loop=$posts[p].images2}
-        <a href="images/600/forum-images/{$posts[p].forumpostid}/{$posts[p].images[i]}" rel="lightbox" onclick="return false;"><img class="boxed" src="images/h150/forum-images/{$posts[p].forumpostid}/{$posts[p].images[i]}" alt="" /></a>
-      {/section}
+      {$post.imagelayout}
+      {foreach from=$post.images2 item=image}
+        <a href="images/600/forum-images/{$post.forumpostid}/{$images}" rel="lightbox" onclick="return false;"><img class="boxed" src="images/h150/forum-images/{$post.forumpostid}/{$images}" alt="" /></a>
+      {/foreach}
       </div>
       {/if}
-      {if $posts[p].files}
+      {if $post.files}
       <h4>Attached Files</h4>
       <ul class="attachments">
-      {section name=i loop=$posts[p].filesdata}
-        <li style="background-image: url('{$posts[p].filesdata[i].logo}');"><a href="downloads/forum-files/{$posts[p].forumpostid}/{$posts[p].filesdata[i].file}">{$posts[p].filesdata[i].file}</a> ({$posts[p].filesdata[i].size})</li>
-      {/section}
+      {foreach from=$post.filesdata item=file}
+        <li style="background-image: url('{$file.logo}');"><a href="downloads/forum-files/{$post.forumpostid}/{$file.file}">{$file.file}</a> ({$file.size})</li>
+      {/foreach}
       </ul>
       {/if}
-      {if $posts[p].authorsignature}<div class="signature">{$posts[p].authorsignature}</div>{/if}
-      <div id="source_{$posts[p].forumpostid}" style="display: none;">{$posts[p].fp_bbbody|escape:"htmlall"}</div>
+      {if $post.authorsignature}<div class="signature">{$post.authorsignature}</div>{/if}
+      <div id="source_{$post.forumpostid}" style="display: none;">{$post.fp_bbbody|escape:"htmlall"}</div>
     </div>
 
     <div class="options">
         {if $userid}
-        <a href="{$RELATIVE_URL}#reply" class="post_reply_link" title="Reply Quoting this post" rel="nofollow" onclick="document.getElementById('post').value = '[quote={$posts[p].author|escape:"htmlall"}]'+document.getElementById('source_{$posts[p].forumpostid}').innerHTML+'[/quote]\n';"><img class="icon" src="images/cms/icons/comments.png" alt="Quote" title="Reply quoting this post" /></a>
+        <a href="{$RELATIVE_URL}#reply" class="post_reply_link" title="Reply Quoting this post" rel="nofollow" onclick="document.getElementById('post').value = '[quote={$post.author|escape:"htmlall"}]'+document.getElementById('source_{$post.forumpostid}').innerHTML+'[/quote]\n';"><img class="icon" src="images/cms/icons/comments.png" alt="Quote" title="Reply quoting this post" /></a>
         {/if}
-        {if $group_admin || $group_moderator || ($userid == $posts[p].fp_posterid && $userid > 0)}
-        <a href="edit-post/{$posts[p].forumpostid}/index/" title="Edit this Post" rel="nofollow"><img class="icon" src="images/cms/icons/comment_edit.png" alt="Edit Post" title="Edit this post or add images / attachments" /></a>
+        {if $group_admin || $group_moderator || ($userid == $post.fp_posterid && $userid > 0)}
+        <a href="edit-post/{$post.forumpostid}/index/" title="Edit this Post" rel="nofollow"><img class="icon" src="images/cms/icons/comment_edit.png" alt="Edit Post" title="Edit this post or add images / attachments" /></a>
         {/if}
         {if $group_admin}
-        <a href="delete-post/{$posts[p].forumpostid}/index/" title="Delete this post" rel="nofollow" onclick="return confirmdelete();"><img class="icon" src="images/cms/icons/delete.png" alt="Delete" title="Delete this post" /></a>
+        <a href="delete-post/{$post.forumpostid}/index/" title="Delete this post" rel="nofollow" onclick="return confirmdelete();"><img class="icon" src="images/cms/icons/delete.png" alt="Delete" title="Delete this post" /></a>
         {/if}
-        {if $group_admin && $posts[p].fp_ip}
-        <a href="#" rel="nofollow" title="IP Address Logged" onclick="alert('IP address: {$posts[p].fp_ip}'); return false;"><img class="icon" src="images/cms/icons/transmit_blue.png" alt="IP Address" title="View the IP Address for this post" /></a>
+        {if $group_admin && $post.fp_ip}
+        <a href="#" rel="nofollow" title="IP Address Logged" onclick="alert('IP address: {$post.fp_ip}'); return false;"><img class="icon" src="images/cms/icons/transmit_blue.png" alt="IP Address" title="View the IP Address for this post" /></a>
         {/if}
         </div>
 
   </div>
-{/section}
+{/foreach}
 </div>
 
 <!-- [Topic Navigation] -->
