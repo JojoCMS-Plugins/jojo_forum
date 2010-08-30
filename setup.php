@@ -120,7 +120,7 @@ $topics = Jojo::selectQuery("SELECT * FROM {forumtopic} WHERE 1");
 
 for ($i=0; $i<count($topics); $i++) {
     $data = Jojo::selectQuery("SELECT COUNT(*) AS numposts FROM {forumpost} WHERE fp_topicid= ? GROUP BY fp_topicid DESC", array($topics[$i]['forumtopicid']));
-    $numposts = $data[0]['numposts'];
+    $numposts = isset($data[0]['numposts']) ? $data[0]['numposts'] : 0;
     $data = Jojo::selectQuery("SELECT forumpostid, fp_posterid, fp_datetime AS lastpost FROM {forumpost} WHERE fp_topicid = ? ORDER BY fp_datetime DESC LIMIT 1", array($topics[$i]['forumtopicid']));
     if (count($data)) {
         $lastpost = $data[0]['lastpost'];
