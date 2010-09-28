@@ -10,15 +10,15 @@
     {if !$userid}
     <p>You are not currently logged in, however guest posts <strong>are</strong> allowed on this forum. If you already have a user account, please <a href="{if $issecure}{$SECUREEURL}{else}{$SITEURL}{/if}/login/{$RELATIVE_URL}" rel="nofollow">Log In</a> first. New users can <a href="register/{if $RELATIVE_URL}{$RELATIVE_URL}{else}{$pg_url}/{/if}" title="Register for Forums" rel="nofollow">Register</a> for an account, or post as a 'guest' below.</p>
     <label>Name:</label><br />
-    <input type="text" size="30" name="name" id="name" value="{$smarty.post.name}" /> *<br />
+    <input type="text" size="30" name="name" id="name" value="{tif $dwoo.post.name $dwoo.post.name ''}" /> *<br />
     {/if}
     <label>Subject:</label><br />
-    <input type="text" size="30" name="subject" id="subject" value="{$smarty.post.subject}" /> *<br />
+    <input type="text" size="30" name="subject" id="subject" value="{tif $dwoo.post.subject $dwoo.post.subject ''}" /> *<br />
     <label>Post:</label><br />
-    <textarea rows="10" cols="50" name="post" id="post">{$smarty.post.post}</textarea>
+    <textarea rows="10" cols="50" name="post" id="post">{tif $dwoo.post.post $dwoo.post.post ''}</textarea>
     <br />
     {if $is_moderator}<label><input type="checkbox" name="sticky" id="sticky" value="sticky" title="Sticky topics will stay at the top of the list" /> Make this topic sticky</label><br />{/if}
-    
+
     {* CAPTCHA is always present for guest posts *}
     {if !$userid}
     <label for="captchacode">Are you Human?</label><br />
@@ -27,7 +27,7 @@
       <input type="text" size="8" name="captchacode" id="captchacode" value="{$captchacode}" /> *<br />
       <em>Code is not case-sensitive</em><br />
     {/if}
-    
+
     <input class="button" type="submit" name="btn_newtopic" value="Submit" />
 
     <div id="attachmentImages">
