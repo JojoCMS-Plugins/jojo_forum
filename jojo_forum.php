@@ -1289,19 +1289,21 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
 
         $data = Jojo::selectQuery("SELECT
                                     forumpostid, fp_topicid, fp_body, ft.ft_forumid, ft.ft_title,
-                                    MATCH(fp_body) AGAINST (?)  AS relevance
+                                    MATCH(fp_body) AGAINST (?)  AS relevance,
+                                    MATCH(ft.ft_title) AGAINST (?) * 100 AS relevance_topic
                                    FROM
                                     {forumpost} fp
                                    LEFT JOIN {forumtopic} ft ON (fp_topicid=forumtopicid)
                                    WHERE
                                     MATCH(fp_body) AGAINST (?) > 0
+                                    OR
+                                    MATCH(ft.ft_title) AGAINST (?) > 0
                                    ORDER BY
-                                    relevance DESC
+                                    relevance + relevance_topic DESC
                                    LIMIT 100",
-                                   array($keywords_str, $keywords_str));
+                                   array($keywords_str, $keywords_str, $keywords_str, $keywords_str));
 
         foreach ($data as $d) {
-
             /* check forum Security - don't list topics in forums you don't have access to */
             $forumperms = new Jojo_Permissions();
             $forumPermissions = $forumperms->getPermissions('forum', $d['ft_forumid']);
@@ -1319,8 +1321,9 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 }
             }
 
+            echo $d['relevance']." ".$d['relevance_topic']." ".$d['ft_title']." >> ".$d['fp_body']."<br/><br/>";
             $result = array();
-            $result['relevance']   = $d['relevance'];
+            $result['relevance']   = $d['relevance'] + $d['relevance_topic'];
             $result['title']       = $d['ft_title'];
             $result['body']        = $d['fp_body'];
             $result['url']         = Jojo::rewrite('topics', $d['fp_topicid'], $d['ft_title'], '', '', $pagenumber);
