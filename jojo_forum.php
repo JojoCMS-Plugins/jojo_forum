@@ -1321,7 +1321,6 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 }
             }
 
-            echo $d['relevance']." ".$d['relevance_topic']." ".$d['ft_title']." >> ".$d['fp_body']."<br/><br/>";
             $result = array();
             $result['relevance']   = $d['relevance'] + $d['relevance_topic'];
             $result['title']       = $d['ft_title'];
