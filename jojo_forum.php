@@ -868,6 +868,7 @@ class Jojo_Plugin_Jojo_forum extends Jojo_Plugin
                 $posts[$i]['url']              = Jojo::rewrite('posts', $posts[$i]['forumpostid'], 'index', '');
                 $posts[$i]['author']           = ($posts[$i]['fp_posterid']!=0) ? Jojo::either($posters[$posts[$i]['fp_posterid']]['login'], $posts[$i]['fp_postername']) : Jojo::either($posts[$i]['fp_postername'], 'Guest');
                 $posts[$i]['authorid']         = $posts[$i]['fp_posterid'];
+                $posts[$i]['authoremail']      = isset($posters[$posts[$i]['fp_posterid']]['email']) ? $posters[$posts[$i]['fp_posterid']]['email'] : '';
                 $posts[$i]['authorurl']        = isset($posters[$posts[$i]['fp_posterid']]['url']) ? $posters[$posts[$i]['fp_posterid']]['url'] : '';
                 $posts[$i]['authortagline']    = isset($posters[$posts[$i]['fp_posterid']]['tagline']) ? $posters[$posts[$i]['fp_posterid']]['tagline'] : '';
                 $posts[$i]['authorsignature']  = isset($posters[$posts[$i]['fp_posterid']]['signature']) ? $posters[$posts[$i]['fp_posterid']]['signature'] : '';
