@@ -26,7 +26,7 @@
   <div class="post {cycle values="row1,row2"}">
   <a name="{$post.forumpostid}"></a>
     <div class="info">
-      <strong>{if $post.authorurl}<a href="{$post.authorurl}">{/if}{$post.author|escape:"htmlall"}{if !$post.authorid && ($post.author != 'Guest')} (guest){/if}{if $post.authorurl}</a>{/if}</strong>
+      <strong class="username">{if $post.authorurl}<a href="{$post.authorurl}">{/if}{$post.author|escape:"htmlall"}{if !$post.authorid && ($post.author != 'Guest')} (guest){/if}{if $post.authorurl}</a>{/if}</strong>
       {if $post.authortagline}<p class="tagline">{$post.authortagline|escape:"htmlall"}</p>{/if}
       {if $post.authoravatar}<img src="{if $post.animated}downloads/users/{$post.authoravatar}{else}images/w75/users/{$post.authoravatar}{/if}" alt="{$post.author|escape:"htmlall"}" title="{$post.author|escape:"htmlall"}" />{/if}
       <p><span title="{$post.fp_datetime|date_format:"%A, %e %B %Y %I:%M%p"}">{$post.postdate}</span><br />

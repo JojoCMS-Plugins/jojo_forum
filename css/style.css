@@ -222,6 +222,10 @@ div.post div.info {
   border: 0;
 }
 
+div.post div.info .username {
+  display: block;
+}
+
 div.post div.body {
   width: 78%;
   padding: 1%;
